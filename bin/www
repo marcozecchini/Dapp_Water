@@ -1,0 +1,176 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var app = require('../app');
+var debug = require('debug')('dao:server');
+var http = require('http');
+var deploy = require('../scripts/deploy_smartcontracts');
+var Web3 = require('web3');
+var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+
+/**
+ * Get port from environment and store in Express.
+ */
+
+var port = normalizePort(process.env.PORT || '8000');
+app.set('port', port);
+
+/**
+ * Create HTTP server.
+ */
+
+var server = http.createServer(app);
+/**
+ * Create ManagerContract and ProposalContract
+ */
+var myManager = deploy.compile("Contracts.sol", "ManagerContract");
+var myProposal = deploy.compile("Contracts.sol", "ProposalContract");
+exports.ManagerCompile = myManager[0];
+exports.ManagerAbi = myManager[1];
+exports.ProposalCompile = myProposal[0];
+exports.ProposalAbi = myProposal[1];
+//TWO WAY
+//FIRST WAY - HERE I DO THE DEPLOY
+var myContract = deploy.deploy("Contracts.sol", "ManagerContract", web3.eth.accounts[0]);
+web3.eth.defaultAccount = web3.eth.accounts[0];
+var address = myContract.address;
+exports.ManagerContract = deploy.retrieve("ManagerContract", address);
+
+
+// SECOND MODEL - I DEPLOY IT ON REMIX AND THEN I ADD THE ADDRESS HERE
+/*web3.eth.defaultAccount = web3.eth.accounts[0];
+var address = "0xab03148a37acbfecc73f3a6fff90f28cf961c4fc";
+exports.ManagerContract = deploy.retrieve("ManagerContract", address);
+ */
+
+exports.proposals = [];
+var timeoutInterval = 60*1000;
+setTimeout(startTheVote, timeoutInterval );
+
+function startTheVote(){
+  var ManagerContract = deploy.retrieve("ManagerContract", address);
+  ManagerContract.startVote();
+  console.log("Vote Started");
+}
+
+var added = exports.ManagerContract.AddedProposal({}, {fromBlock: 0, toBlock: 'latest'});
+added.watch(function (err, res) {
+  if (!err) {
+    exports.proposals.push(res.args._address);
+    console.log("Added new proposal: " + res.args._address);
+  }
+  else
+    console.log(err);
+});
+
+var voted = exports.ManagerContract.Voted({}, {fromBlock: 0, toBlock: 'latest'});
+voted.watch(function (err, res) {
+  if (!err)
+    console.log(res.args._who + " has voted!");
+});
+
+function setWinner(){
+  exports.ManagerContract.winningProposal();
+}
+
+var started = exports.ManagerContract.VoteStarted({}, {fromBlock: 0, toBlock: 'latest'});
+started.watch(function(error, result){
+  if(!error){
+    var date = new Date(result.args._closingTime * 1000);
+    console.log("Closing time to vote is " + String(date));
+    var closing_interval = (result.args._closingTime * 1000 - new Date().getTime()) + 2000;
+    if (closing_interval > 0){
+      setTimeout(setWinner, closing_interval);
+    }
+    else {
+      setWinner();
+    }
+  }
+});
+
+var winner = null;
+var winner_event = exports.ManagerContract.WinProposal({}, {fromBlock: 0, toBlock:'latest'});
+winner_event.watch(function (err, res) {
+  if (!err){
+   winner = res.args._winner;
+   console.log("The winning proposal is: " + winner);
+    try{
+      exports.ManagerContract.trasferToWinner({gas:3000000});
+    } catch (e) {
+     console.log(e)
+   }
+  }
+});
+
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
