@@ -27,19 +27,19 @@ var server = http.createServer(app);
 /**
  * Create ManagerContract and ProposalContract
  */
+
+//TWO WAY
+//FIRST WAY - HERE I DO THE COMPILE AND THE DEPLOY
 var myManager = deploy.compile("Contracts.sol", "ManagerContract");
 var myProposal = deploy.compile("Contracts.sol", "ProposalContract");
 exports.ManagerCompile = myManager[0];
 exports.ManagerAbi = myManager[1];
 exports.ProposalCompile = myProposal[0];
 exports.ProposalAbi = myProposal[1];
-//TWO WAY
-//FIRST WAY - HERE I DO THE DEPLOY
 var myContract = deploy.deploy("Contracts.sol", "ManagerContract", web3.eth.accounts[0]);
 web3.eth.defaultAccount = web3.eth.accounts[0];
 var address = myContract.address;
 exports.ManagerContract = deploy.retrieve("ManagerContract", address);
-
 
 // SECOND MODEL - I DEPLOY IT ON REMIX AND THEN I ADD THE ADDRESS HERE
 /*web3.eth.defaultAccount = web3.eth.accounts[0];

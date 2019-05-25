@@ -10,17 +10,17 @@ var startedVote = false;
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'DAO Water' });
+  res.render('index', { title: 'Dapp Water' });
 });
 
 router.get('/propose', function(req,res,next){
   let ManagerContract = deploy.retrieve("ManagerContract", www.ManagerContract.address);
   var addr = ManagerContract.address;
-  res.render('proposal', {title: 'DAO Water', manager_address: addr.toString('hex'), proposal_abi: www.ProposalAbi, proposal_bytecode: www.ProposalCompile.bytecode});
+  res.render('proposal', {title: 'Dapp Water', manager_address: addr.toString('hex'), proposal_abi: www.ProposalAbi, proposal_bytecode: www.ProposalCompile.bytecode});
 });
 
 router.get('/vote', function (req,res,next) {
-  res.render('vote', {title: "DAO water", manager_address: www.ManagerContract.address, list_proposal_array: www.proposals, manager_abi_link: www.ManagerAbi, proposal_abi_link: www.ProposalAbi});
+  res.render('vote', {title: "Dapp water", manager_address: www.ManagerContract.address, list_proposal_array: www.proposals, manager_abi_link: www.ManagerAbi, proposal_abi_link: www.ProposalAbi});
 });
 
 

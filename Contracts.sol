@@ -233,6 +233,3 @@ contract WaterOracle is usingOraclize {
 
 
 }
-
-
-//<ORACLIZE_API>
