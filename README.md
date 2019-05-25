@@ -46,3 +46,9 @@ Finally, a *nodejs* backend is proposed to interact with the blockchain (through
 A solution with smart contract compiler and deployment can be evaluated. 
 This solution has been tested, up to now, just on a single Ethereum node (*ganache*).
 
+## How to use the website
+
+* *Page "Home"*: Just homepage of the site
+* *Page "Proposal"*: Page to realize the proposal. Once submitted the ownership of the deployed smart contract is changed to the address of the ManagerContract.
+* *Page "Vote"*: Page to ask the permission to vote, available until the beginning of the elections; here you can see the proposals submitted and their content, clicking on one of the listed address, and once you have identified a proposal you can vote it, inserting its index. 
+* *Page "Run"*: Page to see the execution of the winning node. TODO.
