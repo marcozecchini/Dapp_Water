@@ -15,7 +15,7 @@ proposal in case of victory of the election. During the creation of this
 the participants may choose between several options to realize their own
 proposal. 
 
-```[Solidity]
+```solidity
 //Enum for elaborate the proposals
      enum Who { //ENTITY MONITORED
          Home, //Monitor consumption of just a citizen
@@ -52,3 +52,27 @@ This solution has been tested, up to now, just on a single Ethereum node (*ganac
 * *Page "Proposal"*: Page to realize the proposal. Once submitted the ownership of the deployed smart contract is changed to the address of the ManagerContract.
 * *Page "Vote"*: Page to ask the permission to vote, available until the beginning of the elections; here you can see the proposals submitted and their content, clicking on one of the listed address, and once you have identified a proposal you can vote it, inserting its index. 
 * *Page "Run"*: Page to see the execution of the winning node. TODO.
+
+## Way of deploying and compiling the smart contracts
+From _bin/www.js_
+```js
+//TWO WAY
+//FIRST WAY - HERE I DO THE COMPILE AND THE DEPLOY
+var myManager = deploy.compile("Contracts.sol", "ManagerContract");
+var myProposal = deploy.compile("Contracts.sol", "ProposalContract");
+exports.ManagerCompile = myManager[0];
+exports.ManagerAbi = myManager[1];
+exports.ProposalCompile = myProposal[0];
+exports.ProposalAbi = myProposal[1];
+var myContract = deploy.deploy("Contracts.sol", "ManagerContract", web3.eth.accounts[0]);
+web3.eth.defaultAccount = web3.eth.accounts[0];
+var address = myContract.address;
+exports.ManagerContract = deploy.retrieve("ManagerContract", address);
+
+// SECOND MODEL - I DEPLOY IT ON REMIX AND THEN I ADD THE ADDRESS HERE
+/*web3.eth.defaultAccount = web3.eth.accounts[0];
+var address = "0xab03148a37acbfecc73f3a6fff90f28cf961c4fc";
+exports.ManagerContract = deploy.retrieve("ManagerContract", address);
+ */
+
+```
