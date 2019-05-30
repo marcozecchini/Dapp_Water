@@ -54,8 +54,9 @@ block content
             web3 = new Web3(web3.currentProvider);
         } else {
             web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+            web3.eth.defaultAccount = web3.eth.accounts[1];
         }
-        web3.eth.defaultAccount = web3.eth.accounts[1];
+
         document.getElementById("identity").addEventListener('input', function (event) {
             value = Number($(event.target).text());
             web3.eth.defaultAccount = web3.eth.accounts[value];
@@ -116,6 +117,7 @@ block content
             ProposalContract = web3.eth.contract(abi).at(myContract.address);
 
             ProposalContract.Propose(who,mode,incentive,period, man_address, {gas: 3000000});
+            //TODO ProposalContract.addWaterOracle();
             ProposalContract.changeOwner(man_address);
             //var new_owner = ProposalContract.getOwner();
             console.log("New owner is: " + man_address);
