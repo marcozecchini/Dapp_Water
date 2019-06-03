@@ -6,7 +6,7 @@ block content
     p You first need to ask the permission to vote, then when the vote starts you can vote!
     br
     hr
-    h2 Ask to permission to vote
+    h2 Ask the permission to vote
     button(onclick="ask_to_vote()") Ask
     br
     hr
@@ -14,9 +14,9 @@ block content
         h2 The election are open.
         p#closing
         ul#list_proposal
-            - const list = list_proposal_array;
-            each item, index in list
-                li= item
+            <!--  const list = list_proposal_array;-->
+            <!-- each item, index in list-->
+            <!--   li= item -->
         div
             p#details
         label(for="select") Who do you want to vote
@@ -30,22 +30,25 @@ block content
             web3 = new Web3(web3.currentProvider);
         } else {
             web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+            web3.eth.defaultAccount = web3.eth.accounts[1];
         }
 
-        web3.eth.defaultAccount = web3.eth.accounts[1];
-        document.getElementById("identity").addEventListener('input', function (event) {
-            value = Number($(event.target).text());
-            web3.eth.defaultAccount = web3.eth.accounts[value];
-        })
-
         //Change the following if you want to change your identity!
-        web3.eth.defaultAccount = web3.eth.accounts[1];
         var mode = 0, incentive = 0, period = 0, who = 0;
         var man_address = "#{manager_address}";
         var manager_abi = JSON.parse('!{manager_abi_link}');//[ { "constant": false, "inputs": [ { "name": "to", "type": "address" }, { "name": "_amount", "type": "uint256" } ], "name": "delegate", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function" }, { "constant": true, "inputs": [], "name": "balanceTotal", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "closingTime", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": false, "inputs": [], "name": "startVote", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "_address", "type": "address" } ], "name": "addProposalContract", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "winningProposal", "outputs": [ { "name": "_winningProposal", "type": "uint8" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "trasferToWinner", "outputs": [ { "name": "", "type": "bool" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "toVoter", "type": "address" } ], "name": "giveRightToVote", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "toProposal", "type": "uint8" } ], "name": "vote", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function" }, { "constant": true, "inputs": [ { "name": "", "type": "uint256" } ], "name": "proposals_list", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "prova", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "winner", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "inputs": [], "payable": false, "stateMutability": "nonpayable", "type": "constructor" }, { "payable": true, "stateMutability": "payable", "type": "fallback" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_closingTime", "type": "uint256" } ], "name": "VoteStarted", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_winner", "type": "address" } ], "name": "WinProposal", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_who", "type": "address" }, { "indexed": false, "name": "_amount", "type": "uint256" } ], "name": "Voted", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_address", "type": "address" } ], "name": "AddedProposal", "type": "event" } ]
         var proposal_abi = JSON.parse('!{proposal_abi_link}');//[ { "constant": false, "inputs": [ { "name": "_newOwner", "type": "address" } ], "name": "changeOwner", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "changeStageToRunning", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "changeStageToSelecting", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "getOwner", "outputs": [ { "name": "_owner", "type": "address" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "_who", "type": "uint8" }, { "name": "_mode", "type": "uint8" }, { "name": "_incentive", "type": "uint8" }, { "name": "_period", "type": "uint8" }, { "name": "_address", "type": "address" } ], "name": "Propose", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "runContract", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "payable": false, "stateMutability": "nonpayable", "type": "constructor" }, { "payable": true, "stateMutability": "payable", "type": "fallback" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "proposer", "type": "address" }, { "indexed": false, "name": "_who", "type": "uint8" }, { "indexed": false, "name": "_mode", "type": "uint8" }, { "indexed": false, "name": "_incentive", "type": "uint8" }, { "indexed": false, "name": "_period", "type": "uint8" } ], "name": "SubmitProposal", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_newOwner", "type": "address" } ], "name": "OwnerChanged", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_contract", "type": "address" }, { "indexed": false, "name": "stage", "type": "uint8" } ], "name": "StageChanged", "type": "event" }, { "constant": true, "inputs": [], "name": "incentive", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "mode", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "owner", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "period", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "stage", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "who", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" } ];
         var ManagerContract = web3.eth.contract(manager_abi).at(man_address);
+        var start = "#{startedVote}";
         $('#canvote').hide();
+
+        if (start === "true"){
+            ManagerContract.startVote(function(err,res){});
+        }
+
+        function setWinner() {
+            ManagerContract.winningProposal(function(err,res){});
+        }
 
         var started = ManagerContract.VoteStarted({}, {fromBlock: 0, toBlock: 'latest'});
         started.watch(function(error, result){
@@ -54,20 +57,53 @@ block content
                 var element = document.getElementById("closing");
                 var date = new Date(result.args._closingTime * 1000);
                 element.innerHTML = "You have time to vote until " + String(date);
+                var closing_interval = (result.args._closingTime * 1000 - new Date().getTime()) + 2000;
+                if (closing_interval > 0) {
+                    setTimeout(setWinner, closing_interval);
+                } else {
+                    setWinner();
+                }
+            }
+        });
+
+        var added = ManagerContract.AddedProposal({}, {fromBlock: 0, toBlock: 'latest'});
+        added.watch(function (err, res) {
+            if (!err) {
+                $('#canvote ul').append('<li>'+res.args._address+'</li>');
+                console.log("Added new proposal: " + res.args._address);
+            } else
+                console.log(err);
+        });
+
+        var winner = null;
+        var winner_event = ManagerContract.WinProposal({}, {fromBlock: 0, toBlock: 'latest'});
+        winner_event.watch(function (err, res) {
+            if (!err) {
+                winner = res.args._winner;
+                console.log("The winning proposal is: " + winner);
+                try {
+                    ManagerContract.trasferToWinner({gas: 3000000}, function(err,res){});
+                } catch (e) {
+                    console.log(e)
+                }
             }
         });
 
         function ask_to_vote() {
-            ManagerContract.giveRightToVote(web3.eth.defaultAccount);
+            ManagerContract.giveRightToVote(web3.eth.defaultAccount, function (err, res) {
+                
+            });
             console.log("Now you can vote");
         }
 
         function vote(){
-            //todo passando anche il valore che vuoi pagare
             var preference = document.getElementById("select").value;
             console.log(preference);
-            ManagerContract.vote(preference, {value: 10});
-            console.log("You have voted!");
+            ManagerContract.vote(preference, {value: 1000}, function(err,res){
+                if (err) console.log(err)
+                else
+                    console.log("You have voted!");
+            });
         }
 
         $('#list_proposal').click(function (event) {

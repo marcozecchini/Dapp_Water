@@ -8,12 +8,13 @@ var app = require('../app');
 var debug = require('debug')('dao:server');
 var http = require('http');
 var deploy = require('../scripts/deploy_smartcontracts');
-var Web3 = require('web3');
-var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+//var Web3 = require('web3');
+//var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+//web3.eth.defaultAccount = web3.eth.accounts[0];
 //Infura HttpProvider Endpoint eventually
-//web3 = new Web3(new web3.providers.HttpProvider("https://ropsten.infura.io/YOUR_API_KEY"));
-
-
+//var web3 = new Web3(new web3.providers.HttpProvider("https://ropsten.infura.io/v3/ccc3eb1d8553434d8d89bdd6ccf12a6a"));
+//web3.eth.defaultAccount = web3.eth.accounts[0];
 /**
  * Get port from environment and store in Express.
  */
@@ -30,36 +31,39 @@ var server = http.createServer(app);
  * Create ManagerContract and ProposalContract
  */
 
-//TWO WAY
-//FIRST WAY - HERE I DO THE COMPILE AND THE DEPLOY
 var myManager = deploy.compile("Contracts.sol", "ManagerContract");
 var myProposal = deploy.compile("Contracts.sol", "ProposalContract");
 exports.ManagerCompile = myManager[0];
 exports.ManagerAbi = myManager[1];
 exports.ProposalCompile = myProposal[0];
 exports.ProposalAbi = myProposal[1];
-var myContract = deploy.deploy("Contracts.sol", "ManagerContract", web3.eth.accounts[0]);
-web3.eth.defaultAccount = web3.eth.accounts[0];
+
+//TWO WAY
+//FIRST WAY - HERE I DO THE COMPILE AND THE DEPLOY
+/*var myContract = deploy.deploy("Contracts.sol", "ManagerContract", web3.eth.accounts[0]);
 var address = myContract.address;
-exports.ManagerContract = deploy.retrieve("ManagerContract", address);
+exports.ManagerContract = deploy.retrieve("ManagerContract", address);*/
 
 // SECOND MODEL - I DEPLOY IT ON REMIX AND THEN I ADD THE ADDRESS HERE
 /*web3.eth.defaultAccount = web3.eth.accounts[0];
 var address = "0xab03148a37acbfecc73f3a6fff90f28cf961c4fc";
 exports.ManagerContract = deploy.retrieve("ManagerContract", address);
  */
-
+exports.ManagerContractAddress = "0x8ab6b44b2a3fe07df8524d6535c071a049354c9f";
+exports.WaterOracleAddress = "0x6d1aafd9942f2c532f8c8f2df723e50762d5c699";
 exports.proposals = [];
-var timeoutInterval = 60*1000;
+var timeoutInterval = 10*1000;
+exports.startedVote = false;
 setTimeout(startTheVote, timeoutInterval );
 
 function startTheVote(){
-  var ManagerContract = deploy.retrieve("ManagerContract", address);
-  ManagerContract.startVote();
+  /*var ManagerContract = deploy.retrieve("ManagerContract", address);
+  ManagerContract.startVote();*/
+  exports.startedVote = true;
   console.log("Vote Started");
 }
 
-var added = exports.ManagerContract.AddedProposal({}, {fromBlock: 0, toBlock: 'latest'});
+/*var added = exports.ManagerContract.AddedProposal({}, {fromBlock: 0, toBlock: 'latest'});
 added.watch(function (err, res) {
   if (!err) {
     exports.proposals.push(res.args._address);
@@ -67,19 +71,19 @@ added.watch(function (err, res) {
   }
   else
     console.log(err);
-});
+}); */
 
-var voted = exports.ManagerContract.Voted({}, {fromBlock: 0, toBlock: 'latest'});
+/*var voted = exports.ManagerContract.Voted({}, {fromBlock: 0, toBlock: 'latest'});
 voted.watch(function (err, res) {
   if (!err)
     console.log(res.args._who + " has voted!");
-});
+});*/
 
-function setWinner(){
+/*function setWinner(){
   exports.ManagerContract.winningProposal();
-}
+}*/
 
-var started = exports.ManagerContract.VoteStarted({}, {fromBlock: 0, toBlock: 'latest'});
+/*var started = exports.ManagerContract.VoteStarted({}, {fromBlock: 0, toBlock: 'latest'});
 started.watch(function(error, result){
   if(!error){
     var date = new Date(result.args._closingTime * 1000);
@@ -92,9 +96,9 @@ started.watch(function(error, result){
       setWinner();
     }
   }
-});
+});*/
 
-var winner = null;
+/*var winner = null;
 var winner_event = exports.ManagerContract.WinProposal({}, {fromBlock: 0, toBlock:'latest'});
 winner_event.watch(function (err, res) {
   if (!err){
@@ -106,7 +110,7 @@ winner_event.watch(function (err, res) {
      console.log(e)
    }
   }
-});
+});*/
 
 
 /**

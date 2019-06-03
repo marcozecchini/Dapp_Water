@@ -57,20 +57,12 @@ block content
             web3.eth.defaultAccount = web3.eth.accounts[1];
         }
 
-        document.getElementById("identity").addEventListener('input', function (event) {
-            value = Number($(event.target).text());
-            web3.eth.defaultAccount = web3.eth.accounts[value];
-            console.log("Changed account. Now is " + web3.eth.accounts[value]);
-        })
-
         var abi = JSON.parse('!{proposal_abi}'); //[ { "constant": false, "inputs": [ { "name": "_newOwner", "type": "address" } ], "name": "changeOwner", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "changeStageToRunning", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "changeStageToSelecting", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "getOwner", "outputs": [ { "name": "_owner", "type": "address" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "_who", "type": "uint8" }, { "name": "_mode", "type": "uint8" }, { "name": "_incentive", "type": "uint8" }, { "name": "_period", "type": "uint8" }, { "name": "_address", "type": "address" } ], "name": "Propose", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "runContract", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "payable": false, "stateMutability": "nonpayable", "type": "constructor" }, { "payable": true, "stateMutability": "payable", "type": "fallback" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "proposer", "type": "address" }, { "indexed": false, "name": "_who", "type": "uint8" }, { "indexed": false, "name": "_mode", "type": "uint8" }, { "indexed": false, "name": "_incentive", "type": "uint8" }, { "indexed": false, "name": "_period", "type": "uint8" } ], "name": "SubmitProposal", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_newOwner", "type": "address" } ], "name": "OwnerChanged", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_contract", "type": "address" }, { "indexed": false, "name": "stage", "type": "uint8" } ], "name": "StageChanged", "type": "event" }, { "constant": true, "inputs": [], "name": "incentive", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "mode", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "owner", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "period", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "stage", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "who", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" } ];
-        var bytecode = "#{proposal_bytecode}"; //"60806040526000805460a060020a60ff021916905534801561002057600080fd5b5060008054600160a060020a0319163317905561070a806100426000396000f3006080604052600436106100b85763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041662e3aa5681146100ba5780631d4632ac146100cf578063295a52121461010857806368b22a291461012d57806383e284d214610142578063893d20e81461017b5780638da5cb5b146101ac5780639e9d1667146100ba578063a6f9dae1146101c1578063c040e6b8146101e2578063d6d21dfd146101f7578063ef78d4fd1461020c575b005b3480156100c657600080fd5b506100b8610221565b3480156100db57600080fd5b506100e46102ca565b604051808260028111156100f457fe5b60ff16815260200191505060405180910390f35b34801561011457600080fd5b5061011d6102ee565b604051808260018111156100f457fe5b34801561013957600080fd5b506100b8610311565b34801561014e57600080fd5b506100b860ff60043581169060243581169060443581169060643516600160a060020a036084351661034a565b34801561018757600080fd5b50610190610591565b60408051600160a060020a039092168252519081900360200190f35b3480156101b857600080fd5b506101906105a0565b3480156101cd57600080fd5b506100b8600160a060020a03600435166105af565b3480156101ee57600080fd5b506100e46105f7565b34801561020357600080fd5b506100e4610618565b34801561021857600080fd5b506100e461063a565b600054600160a060020a031633811461023957600080fd5b6000805474ff000000000000000000000000000000000000000019167401000000000000000000000000000000000000000090811791829055604051308082527f2ac10ce19c110986e7824de50d9855079ddcc0ceaae6c51f182e458cf81319ca939092900460ff1690602081018260028111156102b357fe5b60ff1681526020019250505060405180910390a150565b60005477010000000000000000000000000000000000000000000000900460ff1681565b600054760100000000000000000000000000000000000000000000900460ff1681565b60028060005474010000000000000000000000000000000000000000900460ff16600281111561033d57fe5b1461034757600080fd5b50565b6000805486919075ff0000000000000000000000000000000000000000001916750100000000000000000000000000000000000000000083600281111561038d57fe5b02179055506000805485919076ff0000000000000000000000000000000000000000000019167601000000000000000000000000000000000000000000008360018111156103d757fe5b02179055506000805484919077ff000000000000000000000000000000000000000000000019167701000000000000000000000000000000000000000000000083600281111561042357fe5b02179055506000805483919078ff0000000000000000000000000000000000000000000000001916780100000000000000000000000000000000000000000000000083600281111561047157fe5b021790555061047f8161065f565b600054604051338082527f312e53d2b6a4f5787f4f7354ccd2e38a9698a74cf114967b982ea963de619d6d92909160ff7501000000000000000000000000000000000000000000830481169276010000000000000000000000000000000000000000000081048216927701000000000000000000000000000000000000000000000082048316927801000000000000000000000000000000000000000000000000909204909116906020810185600281111561053757fe5b60ff16815260200184600181111561054b57fe5b60ff16815260200183600281111561055f57fe5b60ff16815260200182600281111561057357fe5b60ff1681526020019550505050505060405180910390a15050505050565b600054600160a060020a031690565b600054600160a060020a031681565b600054600160a060020a03163381146105c757600080fd5b506000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b60005474010000000000000000000000000000000000000000900460ff1681565b6000547501000000000000000000000000000000000000000000900460ff1681565b6000547801000000000000000000000000000000000000000000000000900460ff1681565b604080517f4c1b39b400000000000000000000000000000000000000000000000000000000815230600482015290518291600160a060020a03831691634c1b39b49160248082019260009290919082900301818387803b1580156106c257600080fd5b505af11580156106d6573d6000803e3d6000fd5b5050505050505600a165627a7a72305820763aa878d403f13bfa431db642c48196506c8cd8421d78a2b829633d04dbaca50029";
-        //todo: o con address già assegnato o con metodo sotto, con metodo sotto finisce out of gas.
-        //var man_address = "0x115524b4ffda8b851e86837be6496b5b10d5690c";
+        var bytecode = "#{proposal_bytecode}";
         var man_address = "#{manager_address}";
+        var or_address = "#{oracle_address}"
         //console.log(!{manager_address}.toString());
         var ProposalContract = null;
-
         function deploy_and_propose() {
 
             var who = 0;
@@ -112,22 +104,24 @@ block content
                     period = 2;
                     break;
             }
+            deploy(bytecode, function (err, myContract){
+                web3.eth.contract(abi).at(myContract.address, function (err, proposalContract) {
+                    if (err) console.log(err);
+                    else{
+                        ProposalContract = proposalContract;
+                        console.log("Calling Propose on ProposalContract...")
+                        proposalContract.Propose(who, mode, incentive, period, man_address, {gas: 3000000}, function(err, res){
+                            console.log("Changing the owner ...")
+                            proposalContract.changeOwner(man_address, function(err,res){
+                                console.log("New owner is: " + man_address);
+                                proposalContract.addWaterOracle(or_address, function(err, res){});
+                            });
+                        });
 
-            var myContract = deploy(bytecode);
-            ProposalContract = web3.eth.contract(abi).at(myContract.address);
-
-            ProposalContract.Propose(who,mode,incentive,period, man_address, {gas: 3000000});
-            //TODO ProposalContract.addWaterOracle();
-            ProposalContract.changeOwner(man_address);
-            //var new_owner = ProposalContract.getOwner();
-            console.log("New owner is: " + man_address);
+                    }
+                });
+            });
         }
-
-        /*function change_owner(){
-            ProposalContract.changeOwner(man_address);
-            //var new_owner = ProposalContract.getOwner();
-            console.log("New owner is: "+ man_address);
-        }*/
 
 
 

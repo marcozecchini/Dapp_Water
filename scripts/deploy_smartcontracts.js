@@ -12,7 +12,7 @@ var BigNumber = require('bignumber.js/bignumber.js');
 //----------------------------------------------------------------------------
 // Change the settings below according to your situation
 //----------------------------------------------------------------------------
-let senderAddress = web3.eth.accounts[0];
+let senderAddress = null; //web3.eth.accounts[0];
 let fileName = "Contracts.sol";
 let contractName = "ManagerContract";
 
@@ -27,12 +27,12 @@ exports.compile = function compileContract(fileName, contractName) {
 // Read the solidity file and store the content in source
     // https://nodejs.org/api/fs.html
     let source = fs.readFileSync(fileName, 'utf8');
-    let oraclize_source = fs.readFileSync("oraclize.sol", "utf8");
+    let oraclize_source = fs.readFileSync("Oraclize.sol", "utf8");
 
     // inputFilesContent is an associative array inputFilesContent['Filename.sol'] = FileContent
     let inputFilesContent = {};
     inputFilesContent[fileName] = source;
-    inputFilesContent["oraclize.sol"] = oraclize_source;
+    inputFilesContent["Oraclize.sol"] = oraclize_source;
 
     // https://github.com/ethereum/solc-js
     // Setting 1 as second parameter activates the optimiser
