@@ -43,8 +43,7 @@ use of an oracle system ([Oraclize/Provable](https://provable.xyz/)), water
 consumption data, used in the running phase of the winning solution.
 
 Finally, a *nodejs* backend is proposed to interact with the blockchain (through *web3js*).
-A solution with smart contract compiler and deployment can be evaluated. 
-This solution has been tested, up to now, just on a single Ethereum node (*ganache*).
+A solution with smart contract compiler can be evaluated. 
 
 ## How to use the website
 
