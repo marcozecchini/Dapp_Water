@@ -53,6 +53,6 @@ A solution with smart contract compiler can be evaluated.
 * *Page "Run"*: Page to see the execution of the winning node: it calls the oracle and update `consumptions` list within the winner ProposalContract to keep track of the consumptions and redistribute the incentives.
 
 ## Images
-![alt-text](https://github.com/marcozecchini/Smartage/blob/master/images/proposal.png)
-![alt-text](https://github.com/marcozecchini/Smartage/blob/master/images/vote.png)
-![alt-text](https://github.com/marcozecchini/Smartage/blob/master/images/run.png)
+![alt-text](https://github.com/marcozecchini/Dapp_Water/blob/master/images/proposal.png)
+![alt-text](https://github.com/marcozecchini/Dapp_Water/blob/master/images/vote.png)
+![alt-text](https://github.com/marcozecchini/Dapp_Water/blob/master/images/run.png)
