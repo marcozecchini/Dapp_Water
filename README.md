@@ -51,3 +51,8 @@ A solution with smart contract compiler can be evaluated.
 * *Page "Proposal"*: Page to realize the proposal. Once submitted the ownership of the deployed smart contract is changed to the address of the ManagerContract.
 * *Page "Vote"*: Page to ask the permission to vote, available until the beginning of the elections; here you can see the proposals submitted and their content, clicking on one of the listed address, and once you have identified a proposal you can vote it, inserting its index. 
 * *Page "Run"*: Page to see the execution of the winning node: it calls the oracle and update `consumptions` list within the winner ProposalContract to keep track of the consumptions and redistribute the incentives.
+
+## Images
+![alt-text](https://github.com/marcozecchini/Smartage/blob/master/images/proposal.png)
+![alt-text](https://github.com/marcozecchini/Smartage/blob/master/images/vote.png)
+![alt-text](https://github.com/marcozecchini/Smartage/blob/master/images/run.png)
