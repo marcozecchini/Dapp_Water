@@ -1,0 +1,79 @@
+extends layout
+
+block content
+    h1 In this section we run the Winner contract
+    p#winner_contract There is no winner yet.
+    hr
+    label(for='who_id') Who:
+    br
+    input#who_id(type='text' name="who_id")
+    br
+    label(for='month_id') Month
+    br
+    input#month_id(type='text' name="who_id")
+    br
+    button(onclick='getRun()') Execute run
+    br
+    h2 Requests
+    ul#requests
+
+    h2 Response
+    ul#responses
+
+
+    script.
+        if (typeof web3 !== 'undefined') {
+            web3 = new Web3(web3.currentProvider);
+        } else {
+            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+            web3.eth.defaultAccount = web3.eth.accounts[1];
+        }
+
+        var man_address = "#{manager_address}";
+        var oracle_addr = "#{oracle_address}";
+        var manager_abi = JSON.parse('!{manager_abi_link}');//[ { "constant": false, "inputs": [ { "name": "to", "type": "address" }, { "name": "_amount", "type": "uint256" } ], "name": "delegate", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function" }, { "constant": true, "inputs": [], "name": "balanceTotal", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "closingTime", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": false, "inputs": [], "name": "startVote", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "_address", "type": "address" } ], "name": "addProposalContract", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "winningProposal", "outputs": [ { "name": "_winningProposal", "type": "uint8" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "trasferToWinner", "outputs": [ { "name": "", "type": "bool" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "toVoter", "type": "address" } ], "name": "giveRightToVote", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "toProposal", "type": "uint8" } ], "name": "vote", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function" }, { "constant": true, "inputs": [ { "name": "", "type": "uint256" } ], "name": "proposals_list", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "prova", "outputs": [ { "name": "", "type": "uint256" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "winner", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "inputs": [], "payable": false, "stateMutability": "nonpayable", "type": "constructor" }, { "payable": true, "stateMutability": "payable", "type": "fallback" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_closingTime", "type": "uint256" } ], "name": "VoteStarted", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_winner", "type": "address" } ], "name": "WinProposal", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_who", "type": "address" }, { "indexed": false, "name": "_amount", "type": "uint256" } ], "name": "Voted", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_address", "type": "address" } ], "name": "AddedProposal", "type": "event" } ]
+        var proposal_abi = JSON.parse('!{proposal_abi_link}');//[ { "constant": false, "inputs": [ { "name": "_newOwner", "type": "address" } ], "name": "changeOwner", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "changeStageToRunning", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "changeStageToSelecting", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "getOwner", "outputs": [ { "name": "_owner", "type": "address" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "_who", "type": "uint8" }, { "name": "_mode", "type": "uint8" }, { "name": "_incentive", "type": "uint8" }, { "name": "_period", "type": "uint8" }, { "name": "_address", "type": "address" } ], "name": "Propose", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "runContract", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "payable": false, "stateMutability": "nonpayable", "type": "constructor" }, { "payable": true, "stateMutability": "payable", "type": "fallback" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "proposer", "type": "address" }, { "indexed": false, "name": "_who", "type": "uint8" }, { "indexed": false, "name": "_mode", "type": "uint8" }, { "indexed": false, "name": "_incentive", "type": "uint8" }, { "indexed": false, "name": "_period", "type": "uint8" } ], "name": "SubmitProposal", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_newOwner", "type": "address" } ], "name": "OwnerChanged", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_contract", "type": "address" }, { "indexed": false, "name": "stage", "type": "uint8" } ], "name": "StageChanged", "type": "event" }, { "constant": true, "inputs": [], "name": "incentive", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "mode", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "owner", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "period", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "stage", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "who", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" } ];
+        var oracle_abi = JSON.parse('!{oracle_abi_link}');
+        var ManagerContract = null;
+        var WinnerProposal = null;
+        var OracleContract = null;
+        var request = {};
+        var results = {};
+        web3.eth.contract(manager_abi).at(man_address, function(err, contract){
+            ManagerContract = contract;
+            ManagerContract.winner.call(function (err, res) {
+                document.getElementById("winner_contract").innerHTML = "This is the address of the winner contract "+res;
+                web3.eth.contract(proposal_abi).at(res, function(err, contract){
+                    WinnerProposal = contract;
+                });
+            });
+        });
+        web3.eth.contract(oracle_abi).at(oracle_addr, function (err, contract){
+            OracleContract = contract;
+        });
+
+        var logReq = OracleContract.LogRequest({},{fromBlock:0, toBlock:'latest'});
+        logReq.watch(function(err,res){
+            if(!err)
+                $('#requests').append('<li>' + res.args.request_id+': '+res.args.name + '</li>');
+                request[res.args.request_id] = res.args.name;
+
+        });
+
+        var logRes = OracleContract.LogResponse({},{fromBlock:0, toBlock: 'latest'});
+        logRes.watch(function(err,res){
+            if (!err){
+                var name = request[res.args.myid];
+                $('#responses').append('<li>' + name + ': ' + res.args.water + '</li>');
+                ManagerContract.updateWinner(name, Number(res.args.water), function (err, res){});
+            }
+        });
+
+        function getRun(){
+            var who = document.getElementById("who_id").value
+            var month = document.getElementById("month_id").value
+            WinnerProposal.runContract(who, month,{}, {}, function (err, res) {
+                if (err) console.log(err);
+            });
+
+        }

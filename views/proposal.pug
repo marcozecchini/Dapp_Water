@@ -24,9 +24,7 @@ block content
     button(onclick='deploy_and_propose()') Invia
     br
     hr
-    //h1 Change the owner
-    //p Press the button to change the owner to the manager
-    //button(onclick='change_owner()') Change
+
 
     datalist#who
         option(value="Home")
@@ -110,12 +108,22 @@ block content
                     else{
                         ProposalContract = proposalContract;
                         console.log("Calling Propose on ProposalContract...")
-                        proposalContract.Propose(who, mode, incentive, period, man_address, {gas: 3000000}, function(err, res){
-                            console.log("Changing the owner ...")
-                            proposalContract.changeOwner(man_address, function(err,res){
-                                console.log("New owner is: " + man_address);
-                                proposalContract.addWaterOracle(or_address, function(err, res){});
-                            });
+                        proposalContract.Propose(who, mode, incentive, period, man_address, {gas: 3000000}, {},function(err, res){
+                            if (err) console.log(err);
+                            else{
+                                console.log("Changing the owner ...");
+                                proposalContract.changeOwner(man_address,{},{}, function (err, res) {
+                                    if (err) console.log(err);
+                                    else {
+                                        console.log("New owner is: " + man_address);
+                                        proposalContract.addWaterOracle(or_address,{},{}, function (err, res) {
+                                            if (err) console.log(err);
+                                        });
+                                    }
+                                });
+
+                            }
+
                         });
 
                     }

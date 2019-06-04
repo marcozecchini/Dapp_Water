@@ -1,7 +1,7 @@
 pragma solidity 0.4.25;
 import "./Oraclize.sol";
 
-contract ProposalContract {
+contract ProposalContract{
 
     function () public payable {}
 
@@ -39,7 +39,7 @@ contract ProposalContract {
     Modes public mode;
     Incentives public incentive;
     Periods public period;
-    address waterOracleAddress;
+    WaterOracle public waterOracle;
 
     //To keep track of the consumption of each consumers
     mapping (string => uint) consumptions;
@@ -88,8 +88,9 @@ contract ProposalContract {
     }
 
     function changeStageToRunning() public onlyBy(owner){
-        stage = Stages.Selection;
+        stage = Stages.Running;
         emit StageChanged(this, stage);
+
     }
 
     function changeOwner(address _newOwner) public onlyBy(owner) {
@@ -103,14 +104,13 @@ contract ProposalContract {
 
     }
 
-    function addWaterOracle(address _address) public onlyBy(owner) {
-        waterOracleAddress = _address;
+    function addWaterOracle(address _address) public {
+        waterOracle = WaterOracle (_address);
     }
 
-    function runContract(string revenue_month) public atStage(Stages.Running){
+    function runContract(string consumer, string revenue_month) public atStage(Stages.Running){
         //here the execution of the different cases
-        WaterOracle oracle = WaterOracle(waterOracleAddress);
-        string memory who_oracle; string memory name;
+        string memory who_oracle;
         if (who == Who.Home) {
             who_oracle = "meter_number";
         }
@@ -120,13 +120,14 @@ contract ProposalContract {
         else if (who == Who.Neighborhood) {
             who_oracle = "borough";
         }
+        address(waterOracle).transfer(10);
+        waterOracle.getWaterConsumption(who_oracle, consumer, revenue_month);
 
-        for (uint i = 0; i < array_consumers.length; i++){
-            address(oracle).transfer(10);
-            oracle.getWaterConsumption(who_oracle, array_consumers[i], revenue_month);
-        }
     }
 
+    function insertConsumption(string _name, uint _amount) public onlyBy(owner){
+        consumptions[_name] += _amount;
+    }
 }
 
 contract ManagerContract {
@@ -225,14 +226,15 @@ contract ManagerContract {
     function trasferToWinner()  public returns (bool) {
 
         address(winner).transfer(address(this).balance);
+        balanceTotal = 0;
         winner.changeStageToRunning();
         //winner.runContract();
         return true;
     }
 
     /* function to run the winner contract*/
-    function runWinner(string _revenue_month) public {
-        winner.runContract(_revenue_month);
+    function updateWinner(string _name, uint _amount) public {
+        winner.insertConsumption(_name, _amount);
     }
 }
 
@@ -240,23 +242,28 @@ contract WaterOracle is usingOraclize {
     string public water;
 
     event LogError(string error_message);
-    event LogRequest(string message);
+    event LogRequest(string message, bytes32 request_id, string name);
     event LogResponse(bytes32 myid, string water);
 
-    function getWaterConsumption(string memory who, string memory name, string memory revenue_month)
-    public payable {
+    function () public  payable {
+    }
+
+    function getWaterConsumption(string who, string name, string revenue_month)
+    public  {
         if (oraclize_getPrice("URL") > this.balance) {
             emit LogError("Put more ETH to pay the query fee....");
         }
         else {
-            emit LogRequest("Pending request, wait ...");
-            oraclize_query("URL", string(abi.encodePacked("json(https://data.cityofnewyork.us/resource/66be-66yr.json?", who,"=",name,"&revenue_month=",revenue_month,").0.consumption_hcf"
+            bytes32 id = oraclize_query("URL", string(abi.encodePacked("json(https://data.cityofnewyork.us/resource/66be-66yr.json?", who,"=",name,"&revenue_month=",revenue_month,").0.consumption_hcf"
                 )));
+            emit LogRequest("Pending request, wait ...", id,name);
+
 
             //oraclize_query("URL", "json(https://data.cityofnewyork.us/resource/66be-66yr.json?development_name=ARMSTRONG%20I&revenue_month=2013-03-01).0.consumption_hcf");
             //RETRIEVE JSON DATA:
             //1. consumption_hcf : consumptions in hundreds of cubic foot
             //2a. borough : Neighborhood , 2b. development_name : Block, 2c. meter_number: Single citizen
+            //3. revenue_month in this way : 2014-04-01
         }
     }
 

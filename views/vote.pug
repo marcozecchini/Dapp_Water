@@ -40,6 +40,7 @@ block content
         var proposal_abi = JSON.parse('!{proposal_abi_link}');//[ { "constant": false, "inputs": [ { "name": "_newOwner", "type": "address" } ], "name": "changeOwner", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "changeStageToRunning", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "changeStageToSelecting", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "getOwner", "outputs": [ { "name": "_owner", "type": "address" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [ { "name": "_who", "type": "uint8" }, { "name": "_mode", "type": "uint8" }, { "name": "_incentive", "type": "uint8" }, { "name": "_period", "type": "uint8" }, { "name": "_address", "type": "address" } ], "name": "Propose", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "constant": false, "inputs": [], "name": "runContract", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "payable": false, "stateMutability": "nonpayable", "type": "constructor" }, { "payable": true, "stateMutability": "payable", "type": "fallback" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "proposer", "type": "address" }, { "indexed": false, "name": "_who", "type": "uint8" }, { "indexed": false, "name": "_mode", "type": "uint8" }, { "indexed": false, "name": "_incentive", "type": "uint8" }, { "indexed": false, "name": "_period", "type": "uint8" } ], "name": "SubmitProposal", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_newOwner", "type": "address" } ], "name": "OwnerChanged", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "_contract", "type": "address" }, { "indexed": false, "name": "stage", "type": "uint8" } ], "name": "StageChanged", "type": "event" }, { "constant": true, "inputs": [], "name": "incentive", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "mode", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "owner", "outputs": [ { "name": "", "type": "address" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "period", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "stage", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" }, { "constant": true, "inputs": [], "name": "who", "outputs": [ { "name": "", "type": "uint8" } ], "payable": false, "stateMutability": "view", "type": "function" } ];
         var ManagerContract = web3.eth.contract(manager_abi).at(man_address);
         var start = "#{startedVote}";
+        var proposal_list = [];
         $('#canvote').hide();
 
         if (start === "true"){
@@ -49,7 +50,7 @@ block content
         function setWinner() {
             ManagerContract.winningProposal(function(err,res){});
         }
-
+        var called = false
         var started = ManagerContract.VoteStarted({}, {fromBlock: 0, toBlock: 'latest'});
         started.watch(function(error, result){
             if(!error){
@@ -61,7 +62,9 @@ block content
                 if (closing_interval > 0) {
                     setTimeout(setWinner, closing_interval);
                 } else {
-                    setWinner();
+                    if (!called)
+                        setWinner();
+                    called = true;
                 }
             }
         });
@@ -71,6 +74,7 @@ block content
             if (!err) {
                 $('#canvote ul').append('<li>'+res.args._address+'</li>');
                 console.log("Added new proposal: " + res.args._address);
+                proposal_list.push(res.args._address);
             } else
                 console.log(err);
         });
@@ -81,19 +85,15 @@ block content
             if (!err) {
                 winner = res.args._winner;
                 console.log("The winning proposal is: " + winner);
-                try {
-                    ManagerContract.trasferToWinner({gas: 3000000}, function(err,res){});
-                } catch (e) {
-                    console.log(e)
-                }
+                ManagerContract.trasferToWinner(function(err,res){});
+
             }
         });
 
         function ask_to_vote() {
             ManagerContract.giveRightToVote(web3.eth.defaultAccount, function (err, res) {
-                
+                console.log("Now you can vote");
             });
-            console.log("Now you can vote");
         }
 
         function vote(){
@@ -127,7 +127,6 @@ block content
                 if (!err)
                     who = res.c[0];
             });
-            var l = "#{list_proposal_array}";
-            var list = l.split(",")
-            document.getElementById("details").innerHTML = getTypeOfProposal(who, mode, incentive, period)+ " with index "+list.indexOf(text);
+
+            document.getElementById("details").innerHTML = getTypeOfProposal(who, mode, incentive, period)+ " with index "+proposal_list.indexOf(text);
         });
