@@ -186,7 +186,7 @@ contract ManagerContract {
 
     /// Give a single vote to proposal $(toProposal).
     function vote(uint8 toProposal) public payable {
-        require (msg.value > 0);
+        require (msg.value > 999);
         Voter storage sender = voters[msg.sender];
         if (sender.voted || toProposal >= proposals.length) return;
         sender.voted = true;
