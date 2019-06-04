@@ -6,11 +6,11 @@ block content
     hr
     label(for='who_id') Who:
     br
-    input#who_id(type='text' name="who_id")
+    input#who_id(type='text' name="who_id" value="V84000259")
     br
     label(for='month_id') Month
     br
-    input#month_id(type='text' name="who_id")
+    input#month_id(type='text' name="who_id" value="2014-04-01")
     br
     button(onclick='getRun()') Execute run
     br
@@ -72,8 +72,12 @@ block content
         function getRun(){
             var who = document.getElementById("who_id").value
             var month = document.getElementById("month_id").value
-            WinnerProposal.runContract(who, month,{}, {}, function (err, res) {
+            WinnerProposal.addConsumer(who, {},{}, function(err,res){
                 if (err) console.log(err);
+                else {
+                    WinnerProposal.runContract(who, month, {gas: 3000000}, {}, function (err, res) {
+                        if (err) console.log(err);
+                    });
+                }
             });
-
         }

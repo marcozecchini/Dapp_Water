@@ -120,13 +120,20 @@ contract ProposalContract{
         else if (who == Who.Neighborhood) {
             who_oracle = "borough";
         }
-        address(waterOracle).transfer(10);
-        waterOracle.getWaterConsumption(who_oracle, consumer, revenue_month);
+        for (uint i = 0; i < array_consumers.length; i++){
+            address(waterOracle).transfer(10);
+            waterOracle.getWaterConsumption(who_oracle, array_consumers[i], revenue_month);
 
+        }
     }
 
-    function insertConsumption(string _name, uint _amount) public onlyBy(owner){
-        consumptions[_name] += _amount;
+    function insertConsumption(string _name) public atStage(Stages.Running){
+        uint _amount= waterOracle.water();
+        consumptions[_name] = _amount;
+        //Redistribution of incentives, JUST CASE FOR LessThan
+        if (_amount < 500){
+            consumers[_name].transfer(100);
+        }
     }
 }
 
@@ -233,13 +240,15 @@ contract ManagerContract {
     }
 
     /* function to run the winner contract*/
-    function updateWinner(string _name, uint _amount) public {
-        winner.insertConsumption(_name, _amount);
-    }
+    /*function updateWinner(string _name) public {
+        winner.insertConsumption(_name);
+    }*/
 }
 
 contract WaterOracle is usingOraclize {
-    string public water;
+    uint public water;
+    ProposalContract proposal;
+    mapping (bytes32 => string) requests;
 
     event LogError(string error_message);
     event LogRequest(string message, bytes32 request_id, string name);
@@ -249,13 +258,17 @@ contract WaterOracle is usingOraclize {
     }
 
     function getWaterConsumption(string who, string name, string revenue_month)
-    public  {
+    public {
+        proposal = ProposalContract(msg.sender);
+
         if (oraclize_getPrice("URL") > this.balance) {
             emit LogError("Put more ETH to pay the query fee....");
         }
         else {
+
             bytes32 id = oraclize_query("URL", string(abi.encodePacked("json(https://data.cityofnewyork.us/resource/66be-66yr.json?", who,"=",name,"&revenue_month=",revenue_month,").0.consumption_hcf"
                 )));
+            requests[id] = name;
             emit LogRequest("Pending request, wait ...", id,name);
 
 
@@ -272,7 +285,9 @@ contract WaterOracle is usingOraclize {
     {
         require(msg.sender == oraclize_cbAddress());
         emit LogResponse(myid, _result);
-        water = _result;
+        water = parseInt(_result);
+        proposal.insertConsumption(requests[myid]);
+
     }
 
 

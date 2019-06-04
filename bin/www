@@ -48,8 +48,8 @@ var address = myContract.address;
 exports.ManagerContract = deploy.retrieve("ManagerContract", address);*/
 
 // SECOND MODEL - I DEPLOY IT ON REMIX AND THEN I ADD THE ADDRESS HERE
-exports.ManagerContractAddress = "0x24c5cfadfb1df6584ff41dccef7a6a8373c98bb6";
-exports.WaterOracleAddress = "0xd7c2b513c1ff5faca329bce5aaf561f9e7c39c1f";
+exports.ManagerContractAddress = "0x90d995b0c94e08972e50b231d4b402634fd29bab";
+exports.WaterOracleAddress = "0x7e1145616632302cf1336cf973e611b5791ea621";
 exports.proposals = [];
 var timeoutInterval = 120*1000;
 exports.startedVote = false;
