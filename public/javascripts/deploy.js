@@ -1,14 +1,14 @@
 function deploy(bytes, final_callback) {
 
     // If estimated gas does not match the actual gas usage, add additionalGas
-    let additionalGas = 50000;
+    let additionalGas = 0;
     let senderAddress = web3.eth.defaultAccount;
     // Deploy a contract with ether attached (= transferValueWei)
     // The transferValueWei is in wei
     var transferValueWei = 20000000000;
 
     // 1 Eth = 173 euro
-    let ethToFiatCurrency = 173;
+    let ethToFiatCurrency = 217;
     let currencyUnit = "Euro";
     console.log("1 Ether: " + ethToFiatCurrency + " " + currencyUnit + " (roughly)");
 
@@ -110,9 +110,4 @@ function waitBlock(contract, callback) {
                 }
             }
         });
-}
-
-// http://stackoverflow.com/questions/951021/what-is-the-javascript-version-of-sleep
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }

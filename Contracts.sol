@@ -1,4 +1,4 @@
-pragma solidity 0.4.25;
+pragma solidity 0.4.26;
 import "./Oraclize.sol";
 
 contract ProposalContract{
@@ -58,10 +58,6 @@ contract ProposalContract{
         _;
     }
 
-    //events
-    event SubmitProposal (address proposer, Who _who, Modes _mode, Incentives _incentive, Periods _period);
-    event OwnerChanged (address _newOwner);
-    event StageChanged(address _contract, Stages stage);
 
     //constructor
     function ProposalContract() public {
@@ -74,7 +70,6 @@ contract ProposalContract{
         incentive = _incentive;
         period = _period;
         addToManager(_address);
-        emit SubmitProposal(msg.sender, who, mode, incentive, period);
     }
 
     function addToManager(address _address) internal {
@@ -82,16 +77,10 @@ contract ProposalContract{
         manager.addProposalContract(this);
     }
 
-    function changeStageToSelecting() public onlyBy(owner){
-        stage = Stages.Selection;
-        emit StageChanged(this, stage);
+    function nextStage() public onlyBy(owner){
+        stage = Stages(uint(stage)+1);
     }
 
-    function changeStageToRunning() public onlyBy(owner){
-        stage = Stages.Running;
-        emit StageChanged(this, stage);
-
-    }
 
     function changeOwner(address _newOwner) public onlyBy(owner) {
         owner = _newOwner;
@@ -108,7 +97,7 @@ contract ProposalContract{
         waterOracle = WaterOracle (_address);
     }
 
-    function runContract(string consumer, string revenue_month) public atStage(Stages.Running){
+    function runContract(string consumer, string revenue_month) public payable atStage(Stages.Running){
         //here the execution of the different cases
         string memory who_oracle;
         if (who == Who.Home) {
@@ -121,14 +110,13 @@ contract ProposalContract{
             who_oracle = "borough";
         }
         for (uint i = 0; i < array_consumers.length; i++){
-            address(waterOracle).transfer(10);
-            waterOracle.getWaterConsumption(who_oracle, array_consumers[i], revenue_month);
+            address(waterOracle).transfer(msg.value);
+            waterOracle.getWaterConsumption(who_oracle, array_consumers[i], revenue_month, this.insertConsumption);
 
         }
     }
 
-    function insertConsumption(string _name) public atStage(Stages.Running){
-        uint _amount= waterOracle.water();
+    function insertConsumption(string _name, uint _amount) public onlyBy(waterOracle){
         consumptions[_name] = _amount;
         //Redistribution of incentives, JUST CASE FOR LessThan
         if (_amount < 500){
@@ -204,7 +192,7 @@ contract ManagerContract {
         if (startedVote && chairperson != msg.sender) return;
         //Change the stage to Selection
         for (uint8 contr = 0; contr < proposals_list.length; contr++){
-            proposals_list[contr].changeStageToSelecting();
+            proposals_list[contr].nextStage();
         }
         proposals.length = proposals_list.length;
         startedVote = true;
@@ -234,21 +222,22 @@ contract ManagerContract {
 
         address(winner).transfer(address(this).balance);
         balanceTotal = 0;
-        winner.changeStageToRunning();
+        winner.nextStage();
         //winner.runContract();
         return true;
     }
 
-    /* function to run the winner contract*/
-    /*function updateWinner(string _name) public {
-        winner.insertConsumption(_name);
-    }*/
+
 }
 
 contract WaterOracle is usingOraclize {
     uint public water;
     ProposalContract proposal;
-    mapping (bytes32 => string) requests;
+    struct Request{
+        string name;
+        function ( string memory _name, uint result) external callback;
+    }
+    mapping (bytes32 => Request) requests;
 
     event LogError(string error_message);
     event LogRequest(string message, bytes32 request_id, string name);
@@ -257,7 +246,7 @@ contract WaterOracle is usingOraclize {
     function () public  payable {
     }
 
-    function getWaterConsumption(string who, string name, string revenue_month)
+    function getWaterConsumption(string who, string name, string revenue_month, function ( string memory _name, uint result) external callback)
     public {
         proposal = ProposalContract(msg.sender);
 
@@ -268,7 +257,7 @@ contract WaterOracle is usingOraclize {
 
             bytes32 id = oraclize_query("URL", string(abi.encodePacked("json(https://data.cityofnewyork.us/resource/66be-66yr.json?", who,"=",name,"&revenue_month=",revenue_month,").0.consumption_hcf"
                 )));
-            requests[id] = name;
+            requests[id] = Request(name,callback);
             emit LogRequest("Pending request, wait ...", id,name);
 
 
@@ -286,7 +275,7 @@ contract WaterOracle is usingOraclize {
         require(msg.sender == oraclize_cbAddress());
         emit LogResponse(myid, _result);
         water = parseInt(_result);
-        proposal.insertConsumption(requests[myid]);
+        requests[myid].callback(requests[myid].name,water);
 
     }
 

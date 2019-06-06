@@ -9,7 +9,7 @@ var debug = require('debug')('dao:server');
 var http = require('http');
 var deploy = require('../scripts/deploy_smartcontracts');
 
-//var Web3 = require('web3');
+exports.Web3 = require('web3');
 //var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 //web3.eth.defaultAccount = web3.eth.accounts[0];
 
@@ -48,8 +48,8 @@ var address = myContract.address;
 exports.ManagerContract = deploy.retrieve("ManagerContract", address);*/
 
 // SECOND MODEL - I DEPLOY IT ON REMIX AND THEN I ADD THE ADDRESS HERE
-exports.ManagerContractAddress = "0x90d995b0c94e08972e50b231d4b402634fd29bab";
-exports.WaterOracleAddress = "0x7e1145616632302cf1336cf973e611b5791ea621";
+exports.ManagerContractAddress = "0x12b367fdfb499e1447c099fde220df9f773fea0d";
+exports.WaterOracleAddress = "0x4a8961647df1b4ae1429caa62261ddff66c74604";
 exports.proposals = [];
 var timeoutInterval = 120*1000;
 exports.startedVote = false;

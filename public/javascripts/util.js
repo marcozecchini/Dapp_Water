@@ -40,3 +40,18 @@ function getTypeOfProposal(who, mode, incentive, period){
 
     return res;
 }
+
+function estimateGas(contractAddr, data, cb) {
+    //var sign = web3.sha3(signature);//.substring(0, 10);
+    web3.eth.estimateGas({
+        data: data,
+        to: contractAddr,
+    }, function(err, estimatedGas) {
+        if (err) console.log(err);
+        else {
+            console.log("estimatedGas: " + estimatedGas);
+            console.log("estimatedGas Metamask slow fee: " + estimatedGas * 1.49586029e-9);
+            cb(err, estimatedGas);
+        }
+    });
+}

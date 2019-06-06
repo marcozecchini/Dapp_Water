@@ -20,7 +20,7 @@ block content
     h2 Response
     ul#responses
 
-
+    script(src="javascripts/util.js")
     script.
         if (typeof web3 !== 'undefined') {
             web3 = new Web3(web3.currentProvider);
@@ -65,7 +65,7 @@ block content
             if (!err){
                 var name = request[res.args.myid];
                 $('#responses').append('<li>' + name + ': ' + res.args.water + '</li>');
-                ManagerContract.updateWinner(name, Number(res.args.water), function (err, res){});
+                //ManagerContract.updateWinner(name, Number(res.args.water), function (err, res){});
             }
         });
 
@@ -75,8 +75,11 @@ block content
             WinnerProposal.addConsumer(who, {},{}, function(err,res){
                 if (err) console.log(err);
                 else {
-                    WinnerProposal.runContract(who, month, {gas: 3000000}, {}, function (err, res) {
-                        if (err) console.log(err);
+                    var callData = WinnerProposal.runContract.getData(who, month);
+                    estimateGas(WinnerProposal.address, callData, function (err, gasEstimated) {
+                        WinnerProposal.runContract(who, month, {value:10, gas: 3000000}, function (err, res) {
+                            if (err) console.log(err);
+                        });
                     });
                 }
             });

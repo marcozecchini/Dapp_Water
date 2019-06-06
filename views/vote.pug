@@ -44,11 +44,17 @@ block content
         $('#canvote').hide();
 
         if (start === "true"){
-            ManagerContract.startVote(function(err,res){});
+            var callData = ManagerContract.startVote.getData();
+            estimateGas(ManagerContract.address, callData, function(err,gasEstimated){
+                ManagerContract.startVote(function(err,res){});
+            });
         }
 
         function setWinner() {
-            ManagerContract.winningProposal(function(err,res){});
+            var callData = ManagerContract.winningProposal.getData();
+            estimateGas(ManagerContract.address,callData, function (err,gas) {
+                ManagerContract.winningProposal(function(err,res){});
+            })
         }
         var called = false
         var started = ManagerContract.VoteStarted({}, {fromBlock: 0, toBlock: 'latest'});
@@ -85,25 +91,33 @@ block content
             if (!err) {
                 winner = res.args._winner;
                 console.log("The winning proposal is: " + winner);
-                ManagerContract.trasferToWinner(function(err,res){});
-
+                var callData = ManagerContract.trasferToWinner.getData();
+                estimateGas(man_address, callData, function (err,gas) {
+                    ManagerContract.trasferToWinner(function(err,res){});
+                })
             }
         });
 
         function ask_to_vote() {
-            ManagerContract.giveRightToVote(web3.eth.defaultAccount, function (err, res) {
-                console.log("Now you can vote");
+            var callData = ManagerContract.giveRightToVote.getData(web3.eth.defaultAccount);
+            estimateGas(man_address, callData, function (err,gas) {
+                ManagerContract.giveRightToVote(web3.eth.defaultAccount, function (err, res) {
+                    console.log("Now you can vote");
+                });
             });
         }
 
         function vote(){
             var preference = document.getElementById("select").value;
             console.log(preference);
-            ManagerContract.vote(preference, {value: 1000}, function(err,res){
-                if (err) console.log(err)
-                else
-                    console.log("You have voted!");
-            });
+            //var callData = ManagerContract.vote.getData(preference);
+                ManagerContract.vote(preference, {value: 1000}, function (err, res) {
+                    if (err) console.log(err)
+                    else
+                        console.log("You have voted!");
+                });
+
+
         }
 
         $('#list_proposal').click(function (event) {

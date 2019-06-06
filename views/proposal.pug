@@ -47,6 +47,7 @@ block content
 
 
     script(src="javascripts/deploy.js")
+    script(src="javascripts/util.js")
     script.
         if (typeof web3 !== 'undefined') {
             web3 = new Web3(web3.currentProvider);
@@ -107,25 +108,32 @@ block content
                     if (err) console.log(err);
                     else{
                         ProposalContract = proposalContract;
-                        console.log("Calling Propose on ProposalContract...")
-                        proposalContract.Propose(who, mode, incentive, period, man_address, {gas: 3000000}, {},function(err, res){
-                            if (err) console.log(err);
-                            else{
-                                console.log("Changing the owner ...");
-                                proposalContract.changeOwner(man_address,{},{}, function (err, res) {
-                                    if (err) console.log(err);
-                                    else {
-                                        console.log("New owner is: " + man_address);
-                                        proposalContract.addWaterOracle(or_address,{},{}, function (err, res) {
+                        console.log("Calling Propose on ProposalContract...");
+                        var callData = ProposalContract.Propose.getData(who,mode,incentive,period,man_address);
+                        console.log(callData);
+                        estimateGas(ProposalContract.address,callData, function(err, gasEstimated){
+                            proposalContract.Propose(who, mode, incentive, period, man_address, {gas: gasEstimated}, {}, function (err, res) {
+                                if (err) console.log(err);
+                                else {
+                                    console.log("Changing the owner ...");
+                                    var callData = ProposalContract.changeOwner.getData(man_address);
+                                    estimateGas(ProposalContract.address, callData, function (err, gasEstimated) {
+                                        proposalContract.changeOwner(man_address, {gas: gasEstimated}, {}, function (err, res) {
                                             if (err) console.log(err);
+                                            else {
+                                                console.log("New owner is: " + man_address);
+                                                var callData = ProposalContract.addWaterOracle.getData(or_address);
+                                                estimateGas(ProposalContract.address, callData, function (err, gasEstimated) {
+                                                    proposalContract.addWaterOracle(or_address, {}, {}, function (err, res) {
+                                                        if (err) console.log(err);
+                                                    });
+                                                });
+                                            }
                                         });
-                                    }
-                                });
-
-                            }
-
+                                    });
+                                }
+                            });
                         });
-
                     }
                 });
             });
