@@ -28,11 +28,13 @@ exports.compile = function compileContract(fileName, contractName) {
     // https://nodejs.org/api/fs.html
     let source = fs.readFileSync(fileName, 'utf8');
     let oraclize_source = fs.readFileSync("Oraclize.sol", "utf8");
+    let datetime_source = fs.readFileSync("Datetime.sol", "utf8")
 
     // inputFilesContent is an associative array inputFilesContent['Filename.sol'] = FileContent
     let inputFilesContent = {};
     inputFilesContent[fileName] = source;
     inputFilesContent["Oraclize.sol"] = oraclize_source;
+    inputFilesContent["Datetime.sol"] = datetime_source;
 
     // https://github.com/ethereum/solc-js
     // Setting 1 as second parameter activates the optimiser

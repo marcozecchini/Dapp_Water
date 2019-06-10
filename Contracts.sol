@@ -1,5 +1,6 @@
 pragma solidity 0.4.26;
 import "./Oraclize.sol";
+import "./Datetime.sol";
 
 contract ProposalContract{
 
@@ -11,15 +12,15 @@ contract ProposalContract{
         Block, //Monitor consumption of a group of citizen
         Neighborhood //Monitor consumption of a larger group of citizen
     }
-    enum Modes{
+    enum Criteria{
         LessThan, //The entity monitored must respect a certain threshold
         LessPossible //The entity monitored must consume less water as much as he can
     }
-    enum Incentives {
+    /*enum Incentives {
         First, //The entities the consume less have the incentive
         WhoIsUnder, //The entities who respect a threshold have an incentive
         WhoIsUnderPercentage //The entities who reduce of a certain percentage have an incentive
-    }
+    }*/
     enum Periods { //Period monitored after which incentives are distributed
         Month,
         Trimester,
@@ -36,17 +37,22 @@ contract ProposalContract{
     address public owner;
     Stages public stage = Stages.Proposal;
     Who public who;
-    Modes public mode;
-    Incentives public incentive;
+    Criteria public criteria;
+    //Incentives public incentive;
     Periods public period;
     WaterOracle public waterOracle;
+
 
     //To keep track of the consumption of each consumers
     mapping (string => uint) consumptions;
 
     //To keep track of the consumers and their addresses
     mapping (string => address) consumers;
-    string[] array_consumers;
+    string[] consumers_array;
+
+    //to keep track of the intervals and starting point for distributing interval
+    uint256 next_incetive = 1554069600;
+    uint256 interval = 4 weeks;
 
     //modifiers
     modifier atStage(Stages _stage){
@@ -64,11 +70,14 @@ contract ProposalContract{
         owner = msg.sender;
     }
 
-    function Propose (Who _who, Modes _mode, Incentives _incentive, Periods _period, address _address) public {
+    function Propose (Who _who, Criteria _mode, Periods _period, address _address) public {
         who = _who;
-        mode = _mode;
-        incentive = _incentive;
+        criteria = _mode;
         period = _period;
+        if(period == Periods.Trimester)
+            interval *= 3;
+        else if(period == Periods.Semester)
+            interval *= 6;
         addToManager(_address);
     }
 
@@ -89,16 +98,16 @@ contract ProposalContract{
     function addConsumer (string _name) public atStage(Stages.Running){
         consumers[_name] = msg.sender;
         consumptions[_name] = 0;
-        array_consumers.push(_name);
-
+        consumers_array.push(_name);
     }
 
     function addWaterOracle(address _address) public {
         waterOracle = WaterOracle (_address);
     }
 
-    function runContract(string consumer, string revenue_month) public payable atStage(Stages.Running){
+    function runContract(string name) public payable atStage(Stages.Running){
         //here the execution of the different cases
+        if (consumers[name] != msg.sender) return;
         string memory who_oracle;
         if (who == Who.Home) {
             who_oracle = "meter_number";
@@ -109,18 +118,38 @@ contract ProposalContract{
         else if (who == Who.Neighborhood) {
             who_oracle = "borough";
         }
-        for (uint i = 0; i < array_consumers.length; i++){
-            address(waterOracle).transfer(msg.value);
-            waterOracle.getWaterConsumption(who_oracle, array_consumers[i], revenue_month, this.insertConsumption);
 
-        }
+        address(waterOracle).transfer(msg.value);
+        waterOracle.getWaterConsumption(who_oracle, name, this.insertConsumption);
+
     }
 
     function insertConsumption(string _name, uint _amount) public onlyBy(waterOracle){
-        consumptions[_name] = _amount;
+        consumptions[_name] += _amount;
         //Redistribution of incentives, JUST CASE FOR LessThan
-        if (_amount < 500){
-            consumers[_name].transfer(100);
+        if (now >= next_incetive+interval){
+            if (Criteria.LessThan == criteria && consumptions[_name] < 500){
+                consumers[_name].transfer(100);
+                return;
+            }
+            else if (Criteria.LessPossible == criteria){
+                address[] less_consumers;
+                uint256[] less_consumers_value;
+                less_consumers.length = 3;
+                less_consumers_value.length = 3;
+                for (uint256 i = 0; i<consumers_array.length; i++ ){
+                    for (uint256 j = 0; j < less_consumers.length; j++){
+                        if (consumptions[consumers_array[i]] < less_consumers_value[j])
+                            less_consumers_value[j] = consumptions[consumers_array[i]];
+                        break;
+                    }
+                }
+
+                for (uint8 k = 0; k < less_consumers_value.length; k++){
+                    consumers[_name].transfer(100);
+                }
+            }
+            next_incetive = now;
         }
     }
 }
@@ -147,11 +176,10 @@ contract ManagerContract {
     bool startedVote;
     uint public closingTime;
     mapping(address => Voter) voters;
-    uint public balanceTotal = 0;
 
     function() payable {}
 
-    function addProposalContract (address _address) public {
+    function addProposalContract (address _address) external {
         if (startedVote == true) return;
         ProposalContract prop = ProposalContract(_address);
         proposals_list.push(prop);
@@ -180,8 +208,6 @@ contract ManagerContract {
         sender.voted = true;
         sender.vote = toProposal;
 
-        //send money to manager
-        balanceTotal += msg.value;
         proposals[toProposal] += sender.weight;
 
         emit Voted(msg.sender, msg.value);
@@ -218,13 +244,11 @@ contract ManagerContract {
     }
 
     /* function to send the money when a propose win*/
-    function trasferToWinner()  public returns (bool) {
+    function trasferToWinner()  public {
 
         address(winner).transfer(address(this).balance);
-        balanceTotal = 0;
         winner.nextStage();
         //winner.runContract();
-        return true;
     }
 
 
@@ -232,7 +256,6 @@ contract ManagerContract {
 
 contract WaterOracle is usingOraclize {
     uint public water;
-    ProposalContract proposal;
     struct Request{
         string name;
         function ( string memory _name, uint result) external callback;
@@ -246,15 +269,16 @@ contract WaterOracle is usingOraclize {
     function () public  payable {
     }
 
-    function getWaterConsumption(string who, string name, string revenue_month, function ( string memory _name, uint result) external callback)
+    function getWaterConsumption(string who, string name, function ( string memory _name, uint result) external callback)
     public {
-        proposal = ProposalContract(msg.sender);
 
         if (oraclize_getPrice("URL") > this.balance) {
-            emit LogError("Put more ETH to pay the query fee....");
+            emit LogError("Put more ETH for query fee....");
         }
         else {
-
+            string memory year = DateTime.uint2str(DateTime.getYear(now));
+            string memory month = DateTime.uint2str(DateTime.getMonth(now));
+            string memory revenue_month = string(abi.encodePacked(year,"-",month,"-01"));
             bytes32 id = oraclize_query("URL", string(abi.encodePacked("json(https://data.cityofnewyork.us/resource/66be-66yr.json?", who,"=",name,"&revenue_month=",revenue_month,").0.consumption_hcf"
                 )));
             requests[id] = Request(name,callback);

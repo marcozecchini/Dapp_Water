@@ -12,10 +12,6 @@ block content
     br
     input#modes_id(list='modes' name="modes_id")
     br
-    label(for='incentives_id') Incetive types:
-    br
-    input#incentives_id(list='incentive' name="incentives_id")
-    br
     label(for='periods_id') Period of measurements:
     br
     input#periods_id(list='periods' name="periods_id")
@@ -34,11 +30,6 @@ block content
     datalist#modes
         option(value="LessThan")
         option(value="LessPossible")
-
-    datalist#incentive
-        option(value="First")
-        option(value="WhoIsUnder")
-        option(value="WhoIsUnderPercentage")
 
     datalist#periods
         option(value="Month")
@@ -66,7 +57,6 @@ block content
 
             var who = 0;
             var mode = 0;
-            var incentive = 0;
             var period = 0;
 
             switch (document.getElementById("who_id").value) {
@@ -81,17 +71,6 @@ block content
             }
             if (document.getElementById("modes_id").value === "LessPossible")
                 mode = 1;
-
-            switch (document.getElementById("incentives_id").value) {
-                case "First":
-                    break;
-                case "WhoIsUnder":
-                    incentive = 1;
-                    break;
-                case "WhoIsUnderPercentage":
-                    incentive = 2;
-                    break;
-            }
 
             switch (document.getElementById("periods_id").value) {
                 case "Month":
@@ -109,10 +88,10 @@ block content
                     else{
                         ProposalContract = proposalContract;
                         console.log("Calling Propose on ProposalContract...");
-                        var callData = ProposalContract.Propose.getData(who,mode,incentive,period,man_address);
+                        var callData = ProposalContract.Propose.getData(who,mode,period,man_address);
                         console.log(callData);
                         estimateGas(ProposalContract.address,callData, function(err, gasEstimated){
-                            proposalContract.Propose(who, mode, incentive, period, man_address, {gas: gasEstimated}, {}, function (err, res) {
+                            proposalContract.Propose(who, mode, period, man_address, {gas: gasEstimated}, {}, function (err, res) {
                                 if (err) console.log(err);
                                 else {
                                     console.log("Changing the owner ...");

@@ -6,11 +6,13 @@ block content
     hr
     label(for='who_id') Who:
     br
-    input#who_id(type='text' name="who_id" value="V84000259")
+    input#who_id(type='text' name="who_id" value="UN-METERED")
     br
-    label(for='month_id') Month
+    //label(for='month_id') Month
+    //br
+    //input#month_id(type='text' name="who_id" value="2014-04-01")
     br
-    input#month_id(type='text' name="who_id" value="2014-04-01")
+    button(onclick='addConsumer()') Add Consumer
     br
     button(onclick='getRun()') Execute run
     br
@@ -69,18 +71,19 @@ block content
             }
         });
 
-        function getRun(){
+        function addConsumer(){
             var who = document.getElementById("who_id").value
-            var month = document.getElementById("month_id").value
             WinnerProposal.addConsumer(who, {},{}, function(err,res){
                 if (err) console.log(err);
-                else {
-                    var callData = WinnerProposal.runContract.getData(who, month);
-                    estimateGas(WinnerProposal.address, callData, function (err, gasEstimated) {
-                        WinnerProposal.runContract(who, month, {value:10, gas: 3000000}, function (err, res) {
-                            if (err) console.log(err);
-                        });
-                    });
-                }
+            });
+        }
+
+        function getRun(){
+            var who = document.getElementById("who_id").value
+            var callData = WinnerProposal.runContract.getData(who);
+            estimateGas(WinnerProposal.address, callData, function (err, gasEstimated) {
+                WinnerProposal.runContract(who, {value: 1000, gas: 3000000}, function (err, res) {
+                    if (err) console.log(err);
+                });
             });
         }

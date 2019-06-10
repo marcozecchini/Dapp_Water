@@ -1,4 +1,4 @@
-function getTypeOfProposal(who, mode, incentive, period){
+function getTypeOfProposal(who, mode, period){
     var res = "";
     switch (who) {
         case 0:
@@ -13,18 +13,6 @@ function getTypeOfProposal(who, mode, incentive, period){
         res += "Less Possible, ";
     else
         res += "Less Than, ";
-
-    switch (incentive) {
-        case 0:
-            res += "First, ";
-            break;
-        case 1:
-            res += "WhoIsUnder, ";
-            break;
-        case 2:
-            res += "WhoIsUnderPercentage, ";
-            break;
-    }
 
     switch (period) {
         case 0:
