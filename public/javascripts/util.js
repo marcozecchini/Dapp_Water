@@ -2,7 +2,7 @@ function getTypeOfProposal(who, mode, period){
     var res = "";
     switch (who) {
         case 0:
-            res += "Home, "; break;
+            res += "Apartment, "; break;
         case 1:
             res += "Block, "; break;
         case 2:

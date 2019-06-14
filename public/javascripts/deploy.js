@@ -1,4 +1,4 @@
-function deploy(bytes, final_callback) {
+function deploy(who, mode, period, man_address, bytes, final_callback) {
 
     // If estimated gas does not match the actual gas usage, add additionalGas
     let additionalGas = 0;
@@ -39,16 +39,16 @@ function deploy(bytes, final_callback) {
             //console.log("TransferValue (" + currencyUnit + "): " + transferValueInFiatCurrencyBig);
             // Get the estimated gas required to  the code.
             // Add additional gas if the gasLimit is too low.
-            let estimateGas = web3.eth.estimateGas({data: bytecode}, function (err, estimateGas) {
-                if (err)
-                    console.log(err);
-                else {
-                    let estimateGasBig = web3.toBigNumber(estimateGas);
-                    let additionalGasBig = web3.toBigNumber(additionalGas);
-                    let totalEstimateGasBig = estimateGasBig.add(additionalGasBig);
-                    console.log("Estimate gas: " + estimateGas);
-                    console.log("User added additionalGas: " + additionalGas);
-                    console.log("Total estimate gas: " + totalEstimateGasBig);
+            //let estimateGas = web3.eth.estimateGas({data: bytecode}, function (err, estimateGas) {
+                //if (err)
+                //    console.log(err);
+                //else {
+                 //   let estimateGasBig = web3.toBigNumber(estimateGas);
+                 //   let additionalGasBig = web3.toBigNumber(additionalGas);
+                  //  let totalEstimateGasBig = estimateGasBig.add(additionalGasBig);
+                   // console.log("Estimate gas: " + estimateGas);
+            //        console.log("User added additionalGas: " + additionalGas);
+                    //console.log("Total estimate gas: " + totalEstimateGasBig);
 
                     // Get the gasPrice. Default value set in the Geth node.
                     // The gas price is based per unit gas.
@@ -77,7 +77,7 @@ function deploy(bytes, final_callback) {
                     //console.log("MyContract: "+JSON.stringify(MyContract,null,4));
 
                     // DEPLOY the contract into the blockchain
-                    var contract = MyContract.new({from: senderAddress, data: bytecode, gas: totalEstimateGasBig}, function (err, contract) {
+                    var contract = MyContract.new(who, mode, period, man_address,{from: senderAddress, data: bytecode, gas: 3000000}, function (err, contract) {
                         if (err) console.log(err);
                         else {
                             // Transaction has entered to geth memory pool
@@ -92,8 +92,8 @@ function deploy(bytes, final_callback) {
                     });
                 }
             });
-        }
-    });
+        //}
+    //});
 
 }
 

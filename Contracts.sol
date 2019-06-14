@@ -7,7 +7,7 @@ contract ProposalContract{
     function () public payable {}
 
     //Enum for elaborate the proposals
-    enum Who {
+    enum What {
         Home, //Monitor consumption of just a citizen
         Block, //Monitor consumption of a group of citizen
         Neighborhood //Monitor consumption of a larger group of citizen
@@ -16,12 +16,7 @@ contract ProposalContract{
         LessThan, //The entity monitored must respect a certain threshold
         LessPossible //The entity monitored must consume less water as much as he can
     }
-    /*enum Incentives {
-        First, //The entities the consume less have the incentive
-        WhoIsUnder, //The entities who respect a threshold have an incentive
-        WhoIsUnderPercentage //The entities who reduce of a certain percentage have an incentive
-    }*/
-    enum Periods { //Period monitored after which incentives are distributed
+    enum Interval { //Period monitored after which incentives are distributed
         Month,
         Trimester,
         Semester
@@ -36,10 +31,9 @@ contract ProposalContract{
 
     address public owner;
     Stages public stage = Stages.Proposal;
-    Who public who;
+    What public what;
     Criteria public criteria;
-    //Incentives public incentive;
-    Periods public period;
+    Interval public interval;
     WaterOracle public waterOracle;
 
 
@@ -52,7 +46,7 @@ contract ProposalContract{
 
     //to keep track of the intervals and starting point for distributing interval
     uint256 next_incetive = 1554069600;
-    uint256 interval = 4 weeks;
+    uint256 interval_week = 4 weeks;
 
     //modifiers
     modifier atStage(Stages _stage){
@@ -66,20 +60,20 @@ contract ProposalContract{
 
 
     //constructor
-    function ProposalContract() public {
+    function ProposalContract(What _what, Criteria _criteria, Interval _interval, address _address) public {
         owner = msg.sender;
+        what = _what;
+        criteria = _criteria;
+        interval = _interval;
+        if(interval == Interval.Trimester)
+            interval_week *= 3;
+        else if(interval == Interval.Semester)
+            interval_week *= 6;
+        addToManager(_address);
+
     }
 
-    function Propose (Who _who, Criteria _mode, Periods _period, address _address) public {
-        who = _who;
-        criteria = _mode;
-        period = _period;
-        if(period == Periods.Trimester)
-            interval *= 3;
-        else if(period == Periods.Semester)
-            interval *= 6;
-        addToManager(_address);
-    }
+
 
     function addToManager(address _address) internal {
         ManagerContract manager = ManagerContract(_address);
@@ -96,6 +90,7 @@ contract ProposalContract{
     }
 
     function addConsumer (string _name) public atStage(Stages.Running){
+        if (consumers[_name] != 0x0 && consumers[_name] != msg.sender) return;
         consumers[_name] = msg.sender;
         consumptions[_name] = 0;
         consumers_array.push(_name);
@@ -109,13 +104,13 @@ contract ProposalContract{
         //here the execution of the different cases
         if (consumers[name] != msg.sender) return;
         string memory who_oracle;
-        if (who == Who.Home) {
+        if (what == What.Home) {
             who_oracle = "meter_number";
         }
-        else if (who == Who.Block) {
+        else if (what == What.Block) {
             who_oracle = "development_name";
         }
-        else if (who == Who.Neighborhood) {
+        else if (what == What.Neighborhood) {
             who_oracle = "borough";
         }
 
@@ -127,7 +122,7 @@ contract ProposalContract{
     function insertConsumption(string _name, uint _amount) public onlyBy(waterOracle){
         consumptions[_name] += _amount;
         //Redistribution of incentives, JUST CASE FOR LessThan
-        if (now >= next_incetive+interval){
+        if (now >= next_incetive+interval_week){
             if (Criteria.LessThan == criteria && consumptions[_name] < 500){
                 consumers[_name].transfer(100);
                 return;
@@ -272,7 +267,7 @@ contract WaterOracle is usingOraclize {
     function getWaterConsumption(string who, string name, function ( string memory _name, uint result) external callback)
     public {
 
-        if (oraclize_getPrice("URL") > this.balance) {
+        if (oraclize_getPrice("URL") > address(this).balance) {
             emit LogError("Put more ETH for query fee....");
         }
         else {

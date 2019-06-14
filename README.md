@@ -17,21 +17,16 @@ proposal.
 
 ```solidity
 //Enum for elaborate the proposals
-     enum Who { //ENTITY MONITORED
-         Home, //Monitor consumption of just a citizen
-         Block, //Monitor consumption of a group of citizen
-         Neighborhood //Monitor consumption of a larger group of citizen
-     }
-     enum Modes{ //CRITERIA USE TO DISTRIBUTE THE INCENTIVES
+     enum What {
+             Home, //Monitor consumption of just a citizen
+             Block, //Monitor consumption of a group of citizen
+             Neighborhood //Monitor consumption of a larger group of citizen
+         }
+     enum Criteria{
          LessThan, //The entity monitored must respect a certain threshold
-         LessPossible //The entities monitored must consume less water as much as they can
+         LessPossible //The entity monitored must consume less water as much as he can
      }
-     enum Incentives { //HOW TO SELECT THOSE ONES THAT HAVE THE INCENTIVE
-         First, //The entities that consume less have the incentive
-         WhoIsUnder, //The entities who respect a threshold have an incentive
-         WhoIsUnderPercentage //The entities who reduce of a certain percentage have an incentive
-     }
-     enum Periods { //PERIOD MONITORED AFTER WHICH INCENTIVES ARE DISTRIBUTED
+     enum Interval { //Period monitored after which incentives are distributed
          Month,
          Trimester,
          Semester

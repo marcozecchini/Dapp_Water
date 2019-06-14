@@ -4,15 +4,15 @@ block content
     h1 Make your proposal
     p Realize your proposal to create a smart contract to be voted.
     br
-    label(for='who_id') Who:
+    label(for='what_id') What:
     br
-    input#who_id(list='who' name="who_id")
+    input#what_id(list='who' name="who_id")
     br
-    label(for='modes_id') Mode:
+    label(for='modes_id') Criteria of incentive distribution:
     br
     input#modes_id(list='modes' name="modes_id")
     br
-    label(for='periods_id') Period of measurements:
+    label(for='periods_id') Interval of measurements:
     br
     input#periods_id(list='periods' name="periods_id")
     br
@@ -23,13 +23,13 @@ block content
 
 
     datalist#who
-        option(value="Home")
+        option(value="Apartment")
         option(value="Block")
         option(value="Neighbour")
 
     datalist#modes
-        option(value="LessThan")
-        option(value="LessPossible")
+        option(value="Less than a threshold")
+        option(value="Less possible")
 
     datalist#periods
         option(value="Month")
@@ -55,46 +55,46 @@ block content
         var ProposalContract = null;
         function deploy_and_propose() {
 
-            var who = 0;
-            var mode = 0;
-            var period = 0;
+            var what = 0;
+            var criteria = 0;
+            var interval = 0;
 
-            switch (document.getElementById("who_id").value) {
-                case "Home":
+            switch (document.getElementById("what_id").value) {
+                case "Apartment":
                     break;
                 case "Block":
-                    who = 1;
+                    what = 1;
                     break;
                 case "Neighbour":
-                    who = 2;
+                    what = 2;
                     break;
             }
             if (document.getElementById("modes_id").value === "LessPossible")
-                mode = 1;
+                criteria = 1;
 
             switch (document.getElementById("periods_id").value) {
                 case "Month":
                     break;
                 case "Trimester":
-                    period = 1;
+                    interval = 1;
                     break;
                 case "Semester":
-                    period = 2;
+                    interval = 2;
                     break;
             }
-            deploy(bytecode, function (err, myContract){
+            deploy(what, criteria, interval, man_address,bytecode, function (err, myContract){
                 web3.eth.contract(abi).at(myContract.address, function (err, proposalContract) {
                     if (err) console.log(err);
                     else{
                         ProposalContract = proposalContract;
-                        console.log("Calling Propose on ProposalContract...");
-                        var callData = ProposalContract.Propose.getData(who,mode,period,man_address);
+                        /*console.log("Calling Propose on ProposalContract...");
+                        var callData = ProposalContract.Propose.getData(what,criteria,interval,man_address);
                         console.log(callData);
                         estimateGas(ProposalContract.address,callData, function(err, gasEstimated){
-                            proposalContract.Propose(who, mode, period, man_address, {gas: gasEstimated}, {}, function (err, res) {
+                            proposalContract.Propose(what, criteria, interval, man_address, {gas: gasEstimated}, {}, function (err, res) {
                                 if (err) console.log(err);
                                 else {
-                                    console.log("Changing the owner ...");
+                                    console.log("Changing the owner ...");*/
                                     var callData = ProposalContract.changeOwner.getData(man_address);
                                     estimateGas(ProposalContract.address, callData, function (err, gasEstimated) {
                                         proposalContract.changeOwner(man_address, {gas: gasEstimated}, {}, function (err, res) {
@@ -110,9 +110,9 @@ block content
                                             }
                                         });
                                     });
-                                }
-                            });
-                        });
+                                //}
+                            //});
+                        //});
                     }
                 });
             });
